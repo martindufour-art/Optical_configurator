@@ -6,7 +6,7 @@ from services.optics_calculations import (
     compute_focal
 )
 
-SENSOR_SIZE_MM = 8.4  # temporaire, configurable plus tard
+SENSOR_SIZE_MM = 11.4  # temporaire, configurable plus tard
 
 
 def solve(params, locks):

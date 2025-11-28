@@ -1,0 +1,11 @@
+[
+  {
+    "name": "Kowa LM16JC",
+    "focal_length_mm": 16,
+    "mount": "C",
+    "format": "2/3\"",
+    "min_wd_mm": 100,
+    "max_wd_mm": 500
+  }
+]
+
