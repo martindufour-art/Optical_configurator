@@ -1,7 +1,8 @@
 # ui/main_window.py
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QFormLayout,
-    QLineEdit, QCheckBox, QLabel, QComboBox, QMessageBox
+    QLineEdit, QCheckBox, QLabel, QComboBox, QMessageBox,
+    QDialog, QPushButton,
 )
 from PyQt6.QtCore import Qt
 
@@ -14,6 +15,64 @@ from services.optics_calculations import (
     compute_distance,
     compute_focal
 )
+from pathlib import Path
+import json
+
+DATA_DIR = Path(__file__).parent.parent / "data"
+CAMERA_FILE = DATA_DIR / "cameras.json"
+
+class AddCameraDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Add Camera")
+        self.layout = QFormLayout()
+        self.setLayout(self.layout)
+
+        self.name_input = QLineEdit()
+        self.res_x_input = QLineEdit()
+        self.res_y_input = QLineEdit()
+        self.pixel_input = QLineEdit()
+        self.shutter_input = QLineEdit()
+        self.notes_input = QLineEdit()
+
+        self.layout.addRow("Name:", self.name_input)
+        self.layout.addRow("Resolution X:", self.res_x_input)
+        self.layout.addRow("Resolution Y:", self.res_y_input)
+        self.layout.addRow("Pixel size (µm):", self.pixel_input)
+        self.layout.addRow("Shutter type:", self.shutter_input)
+        self.layout.addRow("Notes:", self.notes_input)
+
+        self.ok_button = QPushButton("OK")
+        self.ok_button.clicked.connect(self.add_camera)
+        self.layout.addRow(self.ok_button)
+
+    def add_camera(self):
+        try:
+            cam = {
+                "name": self.name_input.text(),
+                "resolution_x": int(self.res_x_input.text()),
+                "resolution_y": int(self.res_y_input.text()),
+                "pixel_size_um": float(self.pixel_input.text()),
+                "shutter": self.shutter_input.text(),
+                "notes": self.notes_input.text()
+            }
+        except ValueError:
+            QMessageBox.warning(self, "Error", "Vérifie les valeurs numériques")
+            return
+
+        try:
+            with open(CAMERA_FILE, "r") as f:
+                data = json.load(f)
+        except FileNotFoundError:
+            data = {"cameras": []}
+
+        data["cameras"].append(cam)
+        with open(CAMERA_FILE, "w") as f:
+            json.dump(data, f, indent=4)
+
+        QMessageBox.information(self, "Success", f"Caméra '{cam['name']}' ajoutée !")
+        self.accept()
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -43,6 +102,10 @@ class MainWindow(QMainWindow):
         self.camera_combo.addItems(camera_names)
         self.camera_combo.currentTextChanged.connect(self.on_camera_selected)
         form.addRow(QLabel("Camera:"), self.camera_combo)
+
+        # --- add camera ---
+        self.add_camera_btn = QPushButton("Add Camera")
+        form.addRow(" ", self.add_camera_btn)
 
         # --- Sensor fields (read-only) ---
         self.pixel_size_edit = QLineEdit()
@@ -88,6 +151,7 @@ class MainWindow(QMainWindow):
         self.wd_lock.stateChanged.connect(self.on_lock_changed)
         self.focal_lock.stateChanged.connect(self.on_lock_changed)
         self.fov_lock.stateChanged.connect(self.on_lock_changed)
+        self.add_camera_btn.clicked.connect(self.open_add_camera_dialog)
 
         # if DB non-empty, select first camera by default
         if camera_names:
@@ -125,6 +189,23 @@ class MainWindow(QMainWindow):
 
         # trigger recalcul (use current wd/focal/fov)
         self.recalculate_from_state()
+
+
+    def load_cameras(self):
+        self.camera_combo.clear()
+        try:
+            with open(CAMERA_FILE, "r") as f:
+                data = json.load(f)
+            self.cameras = data.get("cameras", [])
+            for cam in self.cameras:
+                self.camera_combo.addItem(cam["name"])
+        except FileNotFoundError:
+            self.cameras = []
+
+    def open_add_camera_dialog(self):
+        dialog = AddCameraDialog(self)
+        if dialog.exec():
+            self.load_cameras()
 
     # ----------------------------
     # user edits / locks

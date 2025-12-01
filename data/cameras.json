@@ -1,53 +1,54 @@
 {
-  "cameras": [
-    {
-      "name": "Sony IMX545 (Baumer LX 12MP)",
-      "resolution_x": 4096,
-      "resolution_y": 2992,
-      "pixel_size_um": 2.74,
-      "shutter": "global",
-      "notes": "1/1.1\" CMOS"
-    },
-    {
-      "name": "Sony IMX264 (Baumer LX 5MP)",
-      "resolution_x": 2448,
-      "resolution_y": 2048,
-      "pixel_size_um": 3.45,
-      "shutter": "global",
-      "notes": "2/3\" CMOS"
-    },
-    {
-      "name": "Onsemi Python 5000 (5MP)",
-      "resolution_x": 2448,
-      "resolution_y": 2048,
-      "pixel_size_um": 3.45,
-      "shutter": "global",
-      "notes": "2/3\" CMOS"
-    },
-    {
-      "name": "Gpixel GMAX0505 (5MP)",
-      "resolution_x": 2448,
-      "resolution_y": 2048,
-      "pixel_size_um": 3.45,
-      "shutter": "rolling",
-      "notes": "2/3\" CMOS"
-    },
-    {
-      "name": "Sony IMX250 (5MP)",
-      "resolution_x": 2448,
-      "resolution_y": 2048,
-      "pixel_size_um": 3.45,
-      "shutter": "global",
-      "notes": "2/3\" CMOS"
-    },
-    {
-    "name": "VCXU.2-51C (Sony IMX264 Gen2)",
-    "resolution_x": 2448,
-    "resolution_y": 2048,
-    "pixel_size_um": 3.45,
-    "shutter": "global",
-    "notes": "2/3\" CMOS, color"
-    }
+    "cameras": [
+        {
+            "name": "Sony IMX545 (Baumer LX 12MP)",
+            "resolution_x": 4096,
+            "resolution_y": 2992,
+            "pixel_size_um": 2.74,
+            "shutter": "global",
+            "notes": "1/1.1\" CMOS"
+        },
+        {
+            "name": "Sony IMX264 (Baumer LX 5MP)",
+            "resolution_x": 2448,
+            "resolution_y": 2048,
+            "pixel_size_um": 3.45,
+            "shutter": "global",
+            "notes": "2/3\" CMOS"
+        },
+        {
+            "name": "Onsemi Python 5000 (5MP)",
+            "resolution_x": 2448,
+            "resolution_y": 2048,
+            "pixel_size_um": 3.45,
+            "shutter": "global",
+            "notes": "2/3\" CMOS"
+        },
+        {
+            "name": "Gpixel GMAX0505 (5MP)",
+            "resolution_x": 2448,
+            "resolution_y": 2048,
+            "pixel_size_um": 3.45,
+            "shutter": "rolling",
+            "notes": "2/3\" CMOS"
+        },
+        {
+            "name": "Sony IMX250 (5MP)",
+            "resolution_x": 2448,
+            "resolution_y": 2048,
+            "pixel_size_um": 3.45,
+            "shutter": "global",
+            "notes": "2/3\" CMOS"
+        },
+        {
+            "name": "VCXU.2-51C (Sony IMX264 Gen2)",
+            "resolution_x": 2448,
+            "resolution_y": 2048,
+            "pixel_size_um": 3.45,
+            "shutter": "global",
+            "notes": "2/3\" CMOS, color"
+        }
 
-  ]
+
+    ]
 }
