@@ -105,8 +105,8 @@ class AddLensDialog(QDialog):
         try:
             lens = {
                 "name": self.name_input.text(),
-                "focal_length": int(self.focal_input.text()),
-                "mount": int(self.mount_input.text()),
+                "focal_length": float(self.focal_input.text()),
+                "mount": self.mount_input.text(),
                 "max_image_cirle": float(self.max_image_circle_input.text()),
                 "aperture": self.aperture_input.text()
 
@@ -122,7 +122,7 @@ class AddLensDialog(QDialog):
             data = {"objectives": []}
 
         data["objectives"].append(lens)
-        with open(CAMERA_FILE, "w") as f:
+        with open(OBJECTIVE_FILE, "w") as f:
             json.dump(data, f, indent=4)
 
         QMessageBox.information(self, "Success", f"Objectif '{lens['name']}' ajoutée !")
@@ -172,6 +172,10 @@ class MainWindow(QMainWindow):
         self.objective_combo.currentTextChanged.connect(self.on_objective_selected)
         form.addRow(QLabel("Objectif:"), self.objective_combo)
 
+        # --- add Objectives ---
+        self.add_lens_btn = QPushButton("Add Objective")
+        form.addRow(" ", self.add_lens_btn)
+
  
 
         # --- Sensor fields (read-only) ---
@@ -219,6 +223,7 @@ class MainWindow(QMainWindow):
         self.focal_lock.stateChanged.connect(self.on_lock_changed)
         self.fov_lock.stateChanged.connect(self.on_lock_changed)
         self.add_camera_btn.clicked.connect(self.open_add_camera_dialog)
+        self.add_lens_btn.clicked.connect(self.open_add_lens_dialog)
 
         # if DB non-empty, select first camera by default
         if camera_names:
@@ -258,6 +263,22 @@ class MainWindow(QMainWindow):
         self.recalculate_from_state()
 
     def on_objective_selected(self,name):
+        if not name:
+            return
+        lens = self.objectives.get(name)
+        if lens is None:
+            return
+        
+        self.current_objective = lens
+        focal = lens.get("focal_length")
+
+        self.updating = True
+        self.focal_edit.setText(f"{focal:.3f}")
+        self.focal_lock.setChecked(True)
+
+        self.updating = False
+        self.recalculate_from_state()
+
         return
 
 
