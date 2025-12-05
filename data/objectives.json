@@ -1,0 +1,19 @@
+{
+    "objectives" : [
+        {
+            "name": "16mm f/2.8",
+            "focal_length": 16,
+            "mount": "C",
+            "max_image_circle": 11,  
+            "aperture": 2.8
+
+        },
+        {
+            "name": "50mm f/1.8",
+            "focal_length": 50,
+            "mount": "C",
+            "max_image_circle": 11,
+            "aperture": 1.8
+        }
+    ]
+}

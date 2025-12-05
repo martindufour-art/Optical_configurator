@@ -1,4 +1,5 @@
 # ui/main_window.py
+from os import name
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QFormLayout,
     QLineEdit, QCheckBox, QLabel, QComboBox, QMessageBox,
@@ -20,6 +21,7 @@ import json
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 CAMERA_FILE = DATA_DIR / "cameras.json"
+OBJECTIVE_FILE = DATA_DIR / "objectives.json"
 
 class AddCameraDialog(QDialog):
     def __init__(self, parent=None):
@@ -73,6 +75,60 @@ class AddCameraDialog(QDialog):
         QMessageBox.information(self, "Success", f"Caméra '{cam['name']}' ajoutée !")
         self.accept()
 
+class AddLensDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Add Lens")
+        self.layout = QFormLayout()
+        self.setLayout(self.layout)
+
+        self.name_input = QLineEdit()
+        self.focal_input = QLineEdit()
+        self.mount_input = QLineEdit()
+        self.max_image_circle_input = QLineEdit()
+        self.aperture_input = QLineEdit()
+      
+
+
+        self.layout.addRow("Name:", self.name_input)
+        self.layout.addRow("Focal length:", self.focal_input)
+        self.layout.addRow("mount:", self.mount_input)
+        self.layout.addRow("Maximum image circle:", self.max_image_circle_input)
+        self.layout.addRow("Aperture:", self.aperture_input)
+ 
+
+        self.ok_button = QPushButton("OK")
+        self.ok_button.clicked.connect(self.add_lens)
+        self.layout.addRow(self.ok_button)
+
+    def add_lens(self):
+        try:
+            lens = {
+                "name": self.name_input.text(),
+                "focal_length": int(self.focal_input.text()),
+                "mount": int(self.mount_input.text()),
+                "max_image_cirle": float(self.max_image_circle_input.text()),
+                "aperture": self.aperture_input.text()
+
+            }
+        except ValueError:
+            QMessageBox.warning(self, "Error", "Vérifie les valeurs numériques")
+            return
+
+        try:
+            with open(OBJECTIVE_FILE, "r") as f:
+                data = json.load(f)
+        except FileNotFoundError:
+            data = {"objectives": []}
+
+        data["objectives"].append(lens)
+        with open(CAMERA_FILE, "w") as f:
+            json.dump(data, f, indent=4)
+
+        QMessageBox.information(self, "Success", f"Objectif '{lens['name']}' ajoutée !")
+        self.accept()
+
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -83,10 +139,12 @@ class MainWindow(QMainWindow):
         # DB
         self.db = DatabaseManager()
         self.cameras = self.db.load_cameras()  # dict keyed by name
+        self.objectives = self.db.load_objectives()
 
         # state
         self.updating = False
         self.current_camera = None
+        self.current_objective = None
 
         # UI
         central = QWidget()
@@ -102,10 +160,19 @@ class MainWindow(QMainWindow):
         self.camera_combo.addItems(camera_names)
         self.camera_combo.currentTextChanged.connect(self.on_camera_selected)
         form.addRow(QLabel("Camera:"), self.camera_combo)
-
+        
         # --- add camera ---
         self.add_camera_btn = QPushButton("Add Camera")
         form.addRow(" ", self.add_camera_btn)
+
+        # --- Objectives ---
+        self.objective_combo = QComboBox()
+        objective_names = list(self.objectives.keys())
+        self.objective_combo.addItems(objective_names)
+        self.objective_combo.currentTextChanged.connect(self.on_objective_selected)
+        form.addRow(QLabel("Objectif:"), self.objective_combo)
+
+ 
 
         # --- Sensor fields (read-only) ---
         self.pixel_size_edit = QLineEdit()
@@ -190,22 +257,19 @@ class MainWindow(QMainWindow):
         # trigger recalcul (use current wd/focal/fov)
         self.recalculate_from_state()
 
+    def on_objective_selected(self,name):
+        return
 
-    def load_cameras(self):
-        self.camera_combo.clear()
-        try:
-            with open(CAMERA_FILE, "r") as f:
-                data = json.load(f)
-            self.cameras = data.get("cameras", [])
-            for cam in self.cameras:
-                self.camera_combo.addItem(cam["name"])
-        except FileNotFoundError:
-            self.cameras = []
 
     def open_add_camera_dialog(self):
         dialog = AddCameraDialog(self)
         if dialog.exec():
-            self.load_cameras()
+            self.db.load_cameras()
+    
+    def open_add_lens_dialog(self):
+        dialog = AddLensDialog(self)
+        if dialog.exec():
+            self.db.load_objectives
 
     # ----------------------------
     # user edits / locks
