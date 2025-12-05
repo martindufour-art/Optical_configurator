@@ -2,9 +2,10 @@ from os import name
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QFormLayout,
     QLineEdit, QCheckBox, QLabel, QComboBox, QMessageBox,
-    QDialog, QPushButton, QTabWidget
+    QDialog, QPushButton, QTabWidget, QHBoxLayout, 
 )
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QPixmap
 
 from services.database_manager import DatabaseManager
 from services.solver import solve
@@ -145,11 +146,32 @@ class MainWindow(QMainWindow):
         self.current_camera = None
         self.current_objective = None
 
+        # Header
+        container = QWidget()
+        container_layout = QVBoxLayout()
+        container.setLayout(container_layout)
+        self.setCentralWidget(container)
+        header = QWidget()
+        header_layout = QHBoxLayout()
+        header.setLayout(header_layout)
+
+        logo_label = QLabel()
+        logo_label.setPixmap(QPixmap("logo.jpeg").scaledToHeight(60, Qt.TransformationMode.SmoothTransformation))
+        header_layout.addWidget(logo_label)
+
+        title_label = QLabel("Optical Configurator")
+        title_label.setStyleSheet("font-size: 24px; font-weight: bold; color: white; padding-left: 10px;")
+        header_layout.addWidget(title_label)
+
+        header_layout.addStretch()  # pousse à gauche
+
+        container_layout.addWidget(header)
+
         # --------------------------
         #        TAB WIDGET
         # --------------------------
         tabs = QTabWidget()
-        self.setCentralWidget(tabs)
+        container_layout.addWidget(tabs)
 
         # Onglet 1 : ton interface actuelle
         self.tab_optics = QWidget()
@@ -253,6 +275,30 @@ class MainWindow(QMainWindow):
         # Select first camera once UI is ready
         if camera_names:
             self.camera_combo.setCurrentIndex(0)
+        
+        self.setStyleSheet("""
+    QWidget {
+        background-color: #000000;
+        color: white;
+        font-size: 14px;
+    }
+    QLineEdit, QComboBox, QPushButton {
+        background-color: #111111;
+        color: white;
+        border: 1px solid #444;
+        padding: 4px;
+    }
+    QTabWidget::pane {
+        border: 1px solid #333;
+    }
+    QTabBar::tab {
+        background: #111111;
+        padding: 8px;
+    }
+    QTabBar::tab:selected {
+        background: #222222;
+    }
+""")
 
     # ----------------------------
     # Camera selection handler
