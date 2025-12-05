@@ -1,14 +1,13 @@
-# ui/main_window.py
 from os import name
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QFormLayout,
     QLineEdit, QCheckBox, QLabel, QComboBox, QMessageBox,
-    QDialog, QPushButton,
+    QDialog, QPushButton, QTabWidget
 )
 from PyQt6.QtCore import Qt
 
 from services.database_manager import DatabaseManager
-from services.solver import solve  # solver returns dict with wd, focal, fov
+from services.solver import solve
 from services.optics_calculations import (
     compute_px_per_mm,
     compute_min_detectable_defect,
@@ -138,7 +137,7 @@ class MainWindow(QMainWindow):
 
         # DB
         self.db = DatabaseManager()
-        self.cameras = self.db.load_cameras()  # dict keyed by name
+        self.cameras = self.db.load_cameras()
         self.objectives = self.db.load_objectives()
 
         # state
@@ -146,39 +145,50 @@ class MainWindow(QMainWindow):
         self.current_camera = None
         self.current_objective = None
 
-        # UI
-        central = QWidget()
-        self.setCentralWidget(central)
+        # --------------------------
+        #        TAB WIDGET
+        # --------------------------
+        tabs = QTabWidget()
+        self.setCentralWidget(tabs)
+
+        # Onglet 1 : ton interface actuelle
+        self.tab_optics = QWidget()
+        tabs.addTab(self.tab_optics, "Optical Calculator")
+
+        # Layout principal de l'onglet optique
         main_layout = QVBoxLayout()
-        central.setLayout(main_layout)
+        self.tab_optics.setLayout(main_layout)
 
         form = QFormLayout()
+        main_layout.addLayout(form)
 
-        # --- Camera selector ---
+        # --------------------------
+        #      Camera selector
+        # --------------------------
         self.camera_combo = QComboBox()
         camera_names = list(self.cameras.keys())
         self.camera_combo.addItems(camera_names)
         self.camera_combo.currentTextChanged.connect(self.on_camera_selected)
         form.addRow(QLabel("Camera:"), self.camera_combo)
-        
-        # --- add camera ---
+
         self.add_camera_btn = QPushButton("Add Camera")
         form.addRow(" ", self.add_camera_btn)
 
-        # --- Objectives ---
+        # --------------------------
+        #      Objective selector
+        # --------------------------
         self.objective_combo = QComboBox()
         objective_names = list(self.objectives.keys())
         self.objective_combo.addItems(objective_names)
         self.objective_combo.currentTextChanged.connect(self.on_objective_selected)
-        form.addRow(QLabel("Objectif:"), self.objective_combo)
+        form.addRow(QLabel("Objective:"), self.objective_combo)
 
-        # --- add Objectives ---
         self.add_lens_btn = QPushButton("Add Objective")
         form.addRow(" ", self.add_lens_btn)
 
- 
-
-        # --- Sensor fields (read-only) ---
+        # --------------------------
+        #    Sensor info (RO)
+        # --------------------------
         self.pixel_size_edit = QLineEdit()
         self.pixel_size_edit.setReadOnly(True)
         form.addRow("Pixel size (µm):", self.pixel_size_edit)
@@ -191,46 +201,58 @@ class MainWindow(QMainWindow):
         self.sensor_size_edit.setReadOnly(True)
         form.addRow("Sensor size (mm):", self.sensor_size_edit)
 
-        # --- Optical input fields that user can change ---
-        self.wd_edit = QLineEdit("200")   # mm
+        # --------------------------
+        #     Optical inputs
+        # --------------------------
+        self.wd_edit = QLineEdit("200")
         self.wd_lock = QCheckBox("lock")
         form.addRow("WD (mm):", self.wd_edit)
         form.addRow("", self.wd_lock)
 
-        self.focal_edit = QLineEdit("16")  # mm
+        self.focal_edit = QLineEdit("16")
         self.focal_lock = QCheckBox("lock")
-        form.addRow("Focale (mm):", self.focal_edit)
+        form.addRow("Focal length (mm):", self.focal_edit)
         form.addRow("", self.focal_lock)
 
-        self.fov_edit = QLineEdit("")   # mm
+        self.fov_edit = QLineEdit("")
         self.fov_lock = QCheckBox("lock")
         form.addRow("FOV (mm):", self.fov_edit)
         form.addRow("", self.fov_lock)
 
-        # --- Results: px/mm and min defect ---
+        # --------------------------
+        #   Results
+        # --------------------------
         self.px_per_mm_label = QLabel("-")
-        form.addRow("px / mm (X):", self.px_per_mm_label)
+        form.addRow("px/mm:", self.px_per_mm_label)
+
         self.min_defect_label = QLabel("-")
         form.addRow("Min defect (3 px):", self.min_defect_label)
 
-        main_layout.addLayout(form)
-
-        # connect edits (use editingFinished so user can type)
+        # Connections
         self.wd_edit.editingFinished.connect(self.on_user_edit)
         self.focal_edit.editingFinished.connect(self.on_user_edit)
         self.fov_edit.editingFinished.connect(self.on_user_edit)
+
         self.wd_lock.stateChanged.connect(self.on_lock_changed)
         self.focal_lock.stateChanged.connect(self.on_lock_changed)
         self.fov_lock.stateChanged.connect(self.on_lock_changed)
+
         self.add_camera_btn.clicked.connect(self.open_add_camera_dialog)
         self.add_lens_btn.clicked.connect(self.open_add_lens_dialog)
 
-        # if DB non-empty, select first camera by default
+        # --------------------------
+        #   Onglet 2 (vide)
+        # --------------------------
+        self.tab_extra = QWidget()
+        tabs.addTab(self.tab_extra, "Extra Tools")
+
+        empty_layout = QVBoxLayout()
+        empty_layout.addWidget(QLabel("Future tools will go here."))
+        self.tab_extra.setLayout(empty_layout)
+
+        # Select first camera once UI is ready
         if camera_names:
-            # will call on_camera_selected via signal
             self.camera_combo.setCurrentIndex(0)
-        else:
-            QMessageBox.information(self, "No camera", "No cameras found in data/cameras.json")
 
     # ----------------------------
     # Camera selection handler
