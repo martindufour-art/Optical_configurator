@@ -160,7 +160,7 @@ class MainWindow(QMainWindow):
         header_layout.addWidget(logo_label)
 
         title_label = QLabel("Optical Configurator")
-        title_label.setStyleSheet("font-size: 24px; font-weight: bold; color: white; padding-left: 10px;")
+        title_label.setStyleSheet("font-size: 24px; font-weight: bold; color: #F1C749 ; padding-left: 10px;")
         header_layout.addWidget(title_label)
 
         header_layout.addStretch()  # pousse à gauche
