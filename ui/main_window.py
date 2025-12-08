@@ -205,7 +205,7 @@ class MainWindow(QMainWindow):
         self.objective_combo.currentTextChanged.connect(self.on_objective_selected)
         form.addRow(QLabel("Objective:"), self.objective_combo)
 
-        self.add_lens_btn = QPushButton("Add Objective")
+        self.add_lens_btn = QPushButton("Add Lens")
         form.addRow(" ", self.add_lens_btn)
 
         # --------------------------

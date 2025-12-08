@@ -47,8 +47,14 @@
             "pixel_size_um": 3.45,
             "shutter": "global",
             "notes": "2/3\" CMOS, color"
+        },
+        {
+            "name": " VCXU.2-127C(Sony IMX545 Gen4)",
+            "resolution_x": 4096,
+            "resolution_y": 2992,
+            "pixel_size_um": 2.74,
+            "shutter": "global",
+            "notes": "\n\n        1/1.1\" CMOS\n\n"
         }
-
-
     ]
 }

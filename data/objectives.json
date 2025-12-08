@@ -20,6 +20,13 @@
             "mount": "C",
             "max_image_cirle": 111.0,
             "aperture": "16"
+        },
+        {
+            "name": "LM12CX",
+            "focal_length": 12.0,
+            "mount": "c",
+            "max_image_cirle": 1.0,
+            "aperture": "22"
         }
     ]
 }
