@@ -27,6 +27,13 @@
             "mount": "c",
             "max_image_cirle": 1.0,
             "aperture": "22"
+        },
+        {
+            "name": "zef",
+            "focal_length": 5.0,
+            "mount": "5",
+            "max_image_cirle": 5.0,
+            "aperture": "5"
         }
     ]
 }

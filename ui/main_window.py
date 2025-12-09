@@ -417,6 +417,6 @@ class MainWindow(QMainWindow):
     def load_material(self):
         self.db.load_cameras()
         self.db.load_objectives()
-        self.__init__()
+
         
 
