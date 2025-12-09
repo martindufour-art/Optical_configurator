@@ -163,17 +163,15 @@ class MainWindow(QMainWindow):
         title_label.setStyleSheet("font-size: 24px; font-weight: bold; color: #F1C749 ; padding-left: 10px;")
         header_layout.addWidget(title_label)
 
-        header_layout.addStretch()  # pousse à gauche
+        header_layout.addStretch()  
 
         container_layout.addWidget(header)
 
         # --------------------------
-        #        TAB WIDGET
+        #        TAB 1
         # --------------------------
         tabs = QTabWidget()
         container_layout.addWidget(tabs)
-
-        # Onglet 1 : ton interface actuelle
         self.tab_optics = QWidget()
         tabs.addTab(self.tab_optics, "Optical Calculator")
 
@@ -184,9 +182,8 @@ class MainWindow(QMainWindow):
         form = QFormLayout()
         main_layout.addLayout(form)
 
-        # --------------------------
-        #      Camera selector
-        # --------------------------
+
+        #  Camera selector
         self.camera_combo = QComboBox()
         camera_names = list(self.cameras.keys())
         self.camera_combo.addItems(camera_names)
@@ -196,21 +193,19 @@ class MainWindow(QMainWindow):
         self.add_camera_btn = QPushButton("Add Camera")
         form.addRow(" ", self.add_camera_btn)
 
-        # --------------------------
-        #      Objective selector
-        # --------------------------
+
+        #  Objective selector
+
         self.objective_combo = QComboBox()
         objective_names = list(self.objectives.keys())
         self.objective_combo.addItems(objective_names)
         self.objective_combo.currentTextChanged.connect(self.on_objective_selected)
-        form.addRow(QLabel("Objective:"), self.objective_combo)
+        form.addRow(QLabel("Lens:"), self.objective_combo)
 
         self.add_lens_btn = QPushButton("Add Lens")
         form.addRow(" ", self.add_lens_btn)
 
-        # --------------------------
-        #    Sensor info (RO)
-        # --------------------------
+        # sensor info
         self.pixel_size_edit = QLineEdit()
         self.pixel_size_edit.setReadOnly(True)
         form.addRow("Pixel size (µm):", self.pixel_size_edit)
@@ -223,9 +218,8 @@ class MainWindow(QMainWindow):
         self.sensor_size_edit.setReadOnly(True)
         form.addRow("Sensor size (mm):", self.sensor_size_edit)
 
-        # --------------------------
-        #     Optical inputs
-        # --------------------------
+        # optical inputs
+
         self.wd_edit = QLineEdit("200")
         self.wd_lock = QCheckBox("lock")
         form.addRow("WD (mm):", self.wd_edit)
@@ -241,9 +235,7 @@ class MainWindow(QMainWindow):
         form.addRow("FOV (mm):", self.fov_edit)
         form.addRow("", self.fov_lock)
 
-        # --------------------------
-        #   Results
-        # --------------------------
+        #  results
         self.px_per_mm_label = QLabel("-")
         form.addRow("px/mm:", self.px_per_mm_label)
 
@@ -263,13 +255,13 @@ class MainWindow(QMainWindow):
         self.add_lens_btn.clicked.connect(self.open_add_lens_dialog)
 
         # --------------------------
-        #   Onglet 2 (vide)
+        #   Onglet 2 
         # --------------------------
         self.tab_extra = QWidget()
         tabs.addTab(self.tab_extra, "Extra Tools")
 
         empty_layout = QVBoxLayout()
-        empty_layout.addWidget(QLabel("Future tools will go here."))
+        empty_layout.addWidget(QLabel("Future tools will come soon"))
         self.tab_extra.setLayout(empty_layout)
 
         # Select first camera once UI is ready
@@ -300,9 +292,7 @@ class MainWindow(QMainWindow):
     }
 """)
 
-    # ----------------------------
-    # Camera selection handler
-    # ----------------------------
+
     def on_camera_selected(self, name):
         if not name:
             return
@@ -312,13 +302,13 @@ class MainWindow(QMainWindow):
 
         self.current_camera = cam
 
-        # fill sensor UI (read-only)
+
         px = cam.get("pixel_size_um")
         rx = cam.get("resolution_x")
         ry = cam.get("resolution_y")
         # compute physical sensor size (mm) from px
-        sensor_width_mm = (px * rx) / 1000.0
-        sensor_height_mm = (px * ry) / 1000.0
+        sensor_width_mm = (px * rx) / 1000.
+        sensor_height_mm = (px * ry) / 1000.
 
         # update fields
         self.updating = True
@@ -353,35 +343,29 @@ class MainWindow(QMainWindow):
     def open_add_camera_dialog(self):
         dialog = AddCameraDialog(self)
         if dialog.exec():
-            self.db.load_cameras()
+            self.load_material()
     
     def open_add_lens_dialog(self):
         dialog = AddLensDialog(self)
         if dialog.exec():
-            self.db.load_objectives
+            self.load_material
 
-    # ----------------------------
-    # user edits / locks
-    # ----------------------------
+
     def on_user_edit(self):
         if self.updating:
             return
         self.recalculate_from_state()
 
     def on_lock_changed(self):
-        # simple guard: prevent all unlocked scenario by rechecking box logic if desired
         if self.updating:
             return
         self.recalculate_from_state()
 
-    # ----------------------------
-    # Core: build params, call solver, update derived values
-    # ----------------------------
+
     def recalculate_from_state(self):
         if self.current_camera is None:
             return
 
-        # read inputs (graceful parsing)
         try:
             wd = float(self.wd_edit.text())
         except Exception:
@@ -404,23 +388,21 @@ class MainWindow(QMainWindow):
             "fov": self.fov_lock.isChecked()
         }
 
-        # call the solver (returns dict)
+
         solved = solve(params, locks)
-        # update UI fields with solver results (but avoid triggering editingFinished)
         self.updating = True
         self.wd_edit.setText(f"{solved['wd']:.3f}")
         self.focal_edit.setText(f"{solved['focal']:.3f}")
         self.fov_edit.setText(f"{solved['fov']:.3f}")
         self.updating = False
 
-        # compute px/mm using sensor width
+
         px = self.current_camera["pixel_size_um"]
         rx = self.current_camera["resolution_x"]
         sensor_width_mm = (px * rx) / 1000.0
 
         # assume fov in mm is horizontal FOV
         fov_mm = solved["fov"]
-        # guard division by zero
         if fov_mm <= 0.0:
             self.px_per_mm_label.setText("N/A")
             self.min_defect_label.setText("N/A")
@@ -430,5 +412,11 @@ class MainWindow(QMainWindow):
         min_def = compute_min_detectable_defect(px_per_mm, required_pixels=3)
 
         self.px_per_mm_label.setText(f"{px_per_mm:.3f}")
-        self.min_defect_label.setText(f"{min_def*1000:.1f} µm")  # show µm
+        self.min_defect_label.setText(f"{min_def*1000:.1f} µm") 
+
+    def load_material(self):
+        self.db.load_cameras()
+        self.db.load_objectives()
+        self.__init__()
+        
 

@@ -1,9 +1,7 @@
-# ---- VARIABLES ----
+
 PYTHON = python3
 PIP = pip3
 ENV = venv
-
-# ---- COMMANDES ----
 
 # Création de l'environnement virtuel
 venv:

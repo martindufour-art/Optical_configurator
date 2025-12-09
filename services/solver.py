@@ -10,19 +10,6 @@ SENSOR_SIZE_MM = 11.4  # temporaire, configurable plus tard
 
 
 def solve(params, locks):
-    """
-    params = {
-        "wd": float,
-        "focal": float,
-        "fov": float
-    }
-
-    locks = {
-        "wd": bool,
-        "focal": bool,
-        "fov": bool
-    }
-    """
 
     wd = params["wd"]
     focal = params["focal"]
