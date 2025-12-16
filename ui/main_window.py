@@ -335,14 +335,14 @@ class MainWindow(QMainWindow):
         rx = cam.get("resolution_x")
         ry = cam.get("resolution_y")
         # compute physical sensor size (mm) from px
-        sensor_width_mm = (px * rx) / 1000.
-        sensor_height_mm = (px * ry) / 1000.
+        self.sensor_width_mm = (px * rx) / 1000.
+        self.sensor_height_mm = (px * ry) / 1000.
 
         # update fields
         self.updating = True
         self.pixel_size_edit.setText(f"{px:.3f}")
         self.resolution_edit.setText(f"{rx} × {ry}")
-        self.sensor_size_edit.setText(f"{sensor_width_mm:.3f} × {sensor_height_mm:.3f}")
+        self.sensor_size_edit.setText(f"{self.sensor_width_mm:.3f} × {self.sensor_height_mm:.3f}")
         self.updating = False
 
         # trigger recalcul (use current wd/focal/fov)
@@ -417,7 +417,7 @@ class MainWindow(QMainWindow):
         }
 
 
-        solved = solve(params, locks)
+        solved = solve(params, locks,self.sensor_width_mm)
         self.updating = True
         self.wd_edit.setText(f"{solved['wd']:.3f}")
         self.focal_edit.setText(f"{solved['focal']:.3f}")
@@ -427,7 +427,7 @@ class MainWindow(QMainWindow):
 
         px = self.current_camera["pixel_size_um"]
         rx = self.current_camera["resolution_x"]
-        sensor_width_mm = (px * rx) / 1000.0
+        self.sensor_width_mm = (px * rx) / 1000.0
 
         # assume fov in mm is horizontal FOV
         fov_mm = solved["fov"]

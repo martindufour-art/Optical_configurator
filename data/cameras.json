@@ -31,6 +31,14 @@
             "pixel_size_um": 3.45,
             "shutter": "Global",
             "notes": "1/2.9"
+        },
+        {
+            "name": "Sony IMX 306",
+            "resolution_x": 4112,
+            "resolution_y": 3008,
+            "pixel_size_um": 3.45,
+            "shutter": "global",
+            "notes": "M"
         }
     ]
 }

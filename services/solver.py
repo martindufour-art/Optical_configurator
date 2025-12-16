@@ -6,10 +6,10 @@ from services.optics_calculations import (
     compute_focal
 )
 
-SENSOR_SIZE_MM = 11.4  # temporaire, configurable plus tard
 
 
-def solve(params, locks):
+
+def solve(params, locks, SENSOR_SIZE_MM):
 
     wd = params["wd"]
     focal = params["focal"]
@@ -25,8 +25,6 @@ def solve(params, locks):
     elif locks["focal"] and locks["fov"] and not locks["wd"]:
         wd = compute_distance(fov, SENSOR_SIZE_MM, focal)
 
-    # CAS 2 : 1 locked → l’utilisateur choisit ce qu’il modifie → rien à faire
-    # CAS 3 : rien locked → laisser l’utilisateur mettre ce qu’il veut
 
     return {
         "wd": wd,
