@@ -25,12 +25,12 @@
             "notes": "1/1.1\" CMOS"
         },
         {
-            "name": "zad",
-            "resolution_x": 5,
-            "resolution_y": 5,
-            "pixel_size_um": 5.0,
-            "shutter": "5",
-            "notes": "5"
+            "name": "VCXU.2-15M (Sony IMX273 Gen2)",
+            "resolution_x": 1440,
+            "resolution_y": 1080,
+            "pixel_size_um": 3.45,
+            "shutter": "Global",
+            "notes": "1/2.9"
         }
     ]
 }

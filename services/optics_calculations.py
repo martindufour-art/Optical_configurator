@@ -64,6 +64,36 @@ def compute_min_detectable_defect(px_per_mm: float, required_pixels: int = 3) ->
         raise ValueError("px_per_mm cannot be zero.")
     return required_pixels / px_per_mm
 
+def compute_motion_blur(
+    speed_m_s: float,
+    exposure_time_s: float,
+    px_per_mm: float,
+    pixel_size_um: float,
+):
+    """
+    Compute motion blur due to object motion.
+
+    Returns:
+        blur_object_mm
+        blur_sensor_um
+        blur_px
+    """
+
+    # Blur on object plane
+    blur_object_mm = speed_m_s * exposure_time_s * 1000.0  # m → mm
+
+    # Magnification (approx): image mm / object mm
+    magnification = (px_per_mm * pixel_size_um) / 1000.0
+
+    # Blur on sensor
+    blur_sensor_um = blur_object_mm * magnification * 1000.0
+
+    # Blur in pixels
+    blur_px = blur_sensor_um / pixel_size_um
+
+    return blur_object_mm, blur_sensor_um, blur_px
+
+
 
 # # ------------------------------------------------------------
 # # 3. Profondeur de champ (approximation basique)

@@ -14,7 +14,8 @@ from services.optics_calculations import (
     compute_min_detectable_defect,
     compute_fov,
     compute_distance,
-    compute_focal
+    compute_focal,
+    compute_motion_blur
 )
 from pathlib import Path
 import json
@@ -154,6 +155,8 @@ class MainWindow(QMainWindow):
         header = QWidget()
         header_layout = QHBoxLayout()
         header.setLayout(header_layout)
+        self.reset_btn = QPushButton("reset")
+
 
         logo_label = QLabel()
         logo_label.setPixmap(QPixmap("logo.jpeg").scaledToHeight(60, Qt.TransformationMode.SmoothTransformation))
@@ -163,9 +166,13 @@ class MainWindow(QMainWindow):
         title_label.setStyleSheet("font-size: 24px; font-weight: bold; color: #F1C749 ; padding-left: 10px;")
         header_layout.addWidget(title_label)
 
+        header_layout.addWidget(self.reset_btn)
+
         header_layout.addStretch()  
 
         container_layout.addWidget(header)
+
+
 
         # --------------------------
         #        TAB 1
@@ -253,18 +260,39 @@ class MainWindow(QMainWindow):
 
         self.add_camera_btn.clicked.connect(self.open_add_camera_dialog)
         self.add_lens_btn.clicked.connect(self.open_add_lens_dialog)
+        self.reset_btn.clicked.connect(self.reset)
+
 
         # --------------------------
-        #   Onglet 2 
+        #   Tab 2 - Motion Blur
         # --------------------------
         self.tab_extra = QWidget()
-        tabs.addTab(self.tab_extra, "Extra Tools")
+        tabs.addTab(self.tab_extra, "Motion Blur")
 
-        empty_layout = QVBoxLayout()
-        empty_layout.addWidget(QLabel("Future tools will come soon"))
-        self.tab_extra.setLayout(empty_layout)
+        blur_layout = QFormLayout()
+        self.tab_extra.setLayout(blur_layout)
 
-        # Select first camera once UI is ready
+        self.speed_edit = QLineEdit("1.0")
+        blur_layout.addRow("Object speed (m/s):", self.speed_edit)
+
+        self.exposure_edit = QLineEdit("0.001")
+        blur_layout.addRow("Exposure time (s):", self.exposure_edit)
+
+        self.blur_object_label = QLabel("-")
+        blur_layout.addRow("Blur on object (mm):", self.blur_object_label)
+
+        self.blur_sensor_label = QLabel("-")
+        blur_layout.addRow("Blur on sensor (µm):", self.blur_sensor_label)
+
+        self.blur_px_label = QLabel("-")
+        blur_layout.addRow("Blur (px):", self.blur_px_label)
+
+        self.speed_edit.editingFinished.connect(self.update_motion_blur)
+        self.exposure_edit.editingFinished.connect(self.update_motion_blur)
+
+        # --------------------------
+        #   Starting 
+        # --------------------------
         if camera_names:
             self.camera_combo.setCurrentIndex(0)
         
@@ -420,3 +448,76 @@ class MainWindow(QMainWindow):
 
         
 
+    def update_motion_blur(self):
+        if self.current_camera is None:
+            return
+
+        try:
+            speed = float(self.speed_edit.text())
+            exposure = float(self.exposure_edit.text())
+        except ValueError:
+            return
+
+        try:
+            fov_mm = float(self.fov_edit.text())
+        except ValueError:
+            return
+
+        if fov_mm <= 0:
+            return
+
+        rx = self.current_camera["resolution_x"]
+        px_size = self.current_camera["pixel_size_um"]
+
+        px_per_mm = compute_px_per_mm(rx, fov_mm)
+
+
+
+        blur_obj_mm, blur_sensor_um, blur_px = compute_motion_blur(
+            speed_m_s=speed,
+            exposure_time_s=exposure,
+            px_per_mm=px_per_mm,
+            pixel_size_um=px_size,
+        )
+
+        self.blur_object_label.setText(f"{blur_obj_mm:.3f}")
+        self.blur_sensor_label.setText(f"{blur_sensor_um:.2f}")
+        self.blur_px_label.setText(f"{blur_px:.2f}")
+    
+    def reset(self):
+        self.updating = True
+
+        self.current_camera = None
+        self.current_objective = None
+
+        if self.camera_combo.count() > 0:
+            self.camera_combo.setCurrentIndex(0)
+
+        if self.objective_combo.count() > 0:
+            self.objective_combo.setCurrentIndex(0)
+
+        self.wd_edit.setText("200")
+        self.focal_edit.setText("")
+        self.fov_edit.setText("")
+
+        self.wd_lock.setChecked(False)
+        self.focal_lock.setChecked(False)
+        self.fov_lock.setChecked(False)
+
+        self.pixel_size_edit.clear()
+        self.resolution_edit.clear()
+        self.sensor_size_edit.clear()
+
+        self.px_per_mm_label.setText("-")
+        self.min_defect_label.setText("-")
+
+        self.speed_edit.setText("1.0")
+        self.exposure_edit.setText("0.001")
+        self.blur_object_label.setText("-")
+        self.blur_sensor_label.setText("-")
+        self.blur_px_label.setText("-")
+
+        self.updating = False
+
+        if self.camera_combo.count() > 0:
+            self.on_camera_selected(self.camera_combo.currentText())
