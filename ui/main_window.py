@@ -1,10 +1,10 @@
-from os import name
+from os import name,execl
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QFormLayout,
     QLineEdit, QCheckBox, QLabel, QComboBox, QMessageBox,
     QDialog, QPushButton, QTabWidget, QHBoxLayout, 
 )
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QPixmap
 
 from services.database_manager import DatabaseManager
@@ -19,6 +19,7 @@ from services.optics_calculations import (
 )
 from pathlib import Path
 import json
+import sys
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 CAMERA_FILE = DATA_DIR / "cameras.json"
@@ -75,6 +76,7 @@ class AddCameraDialog(QDialog):
 
         QMessageBox.information(self, "Success", f"Caméra '{cam['name']}' ajoutée !")
         self.accept()
+        QTimer.singleShot(500, self.parent().reset)
 
 class AddLensDialog(QDialog):
     def __init__(self, parent=None):
@@ -371,7 +373,8 @@ class MainWindow(QMainWindow):
     def open_add_camera_dialog(self):
         dialog = AddCameraDialog(self)
         if dialog.exec():
-            self.load_material()
+            self.db.load_cameras()
+            self.reset()
     
     def open_add_lens_dialog(self):
         dialog = AddLensDialog(self)
@@ -485,39 +488,12 @@ class MainWindow(QMainWindow):
         self.blur_px_label.setText(f"{blur_px:.2f}")
     
     def reset(self):
-        self.updating = True
-
-        self.current_camera = None
-        self.current_objective = None
-
-        if self.camera_combo.count() > 0:
-            self.camera_combo.setCurrentIndex(0)
-
-        if self.objective_combo.count() > 0:
-            self.objective_combo.setCurrentIndex(0)
-
-        self.wd_edit.setText("200")
-        self.focal_edit.setText("")
-        self.fov_edit.setText("")
-
-        self.wd_lock.setChecked(False)
-        self.focal_lock.setChecked(False)
-        self.fov_lock.setChecked(False)
-
-        self.pixel_size_edit.clear()
-        self.resolution_edit.clear()
-        self.sensor_size_edit.clear()
-
-        self.px_per_mm_label.setText("-")
-        self.min_defect_label.setText("-")
-
-        self.speed_edit.setText("1.0")
-        self.exposure_edit.setText("0.001")
-        self.blur_object_label.setText("-")
-        self.blur_sensor_label.setText("-")
-        self.blur_px_label.setText("-")
-
-        self.updating = False
-
-        if self.camera_combo.count() > 0:
-            self.on_camera_selected(self.camera_combo.currentText())
+        reply = QMessageBox.question(
+            self,
+            "Restart application",
+            "This will restart the application.\nContinue?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+        )
+        if reply == QMessageBox.StandardButton.Yes:
+            python = sys.executable
+            execl(python, python, *sys.argv)
