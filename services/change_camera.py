@@ -4,4 +4,4 @@ from PyQt6.QtWidgets import (
     QDialog, QPushButton, QTabWidget, QHBoxLayout, 
 )
 
-class ChangeCamearaDialog()
+
