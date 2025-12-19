@@ -21,115 +21,15 @@ from pathlib import Path
 import json
 import sys
 
+from services.AddCamera import AddCameraDialog
+from services.AddLens import AddLensDialog
+
 DATA_DIR = Path(__file__).parent.parent / "data"
 CAMERA_FILE = DATA_DIR / "cameras.json"
 OBJECTIVE_FILE = DATA_DIR / "objectives.json"
 
-class AddCameraDialog(QDialog):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setWindowTitle("Add Camera")
-        self.layout = QFormLayout()
-        self.setLayout(self.layout)
-
-        self.name_input = QLineEdit()
-        self.res_x_input = QLineEdit()
-        self.res_y_input = QLineEdit()
-        self.pixel_input = QLineEdit()
-        self.shutter_input = QLineEdit()
-        self.notes_input = QLineEdit()
-
-        self.layout.addRow("Name:", self.name_input)
-        self.layout.addRow("Resolution X:", self.res_x_input)
-        self.layout.addRow("Resolution Y:", self.res_y_input)
-        self.layout.addRow("Pixel size (µm):", self.pixel_input)
-        self.layout.addRow("Shutter type:", self.shutter_input)
-        self.layout.addRow("Notes:", self.notes_input)
-
-        self.ok_button = QPushButton("OK")
-        self.ok_button.clicked.connect(self.add_camera)
-        self.layout.addRow(self.ok_button)
-
-    def add_camera(self):
-        try:
-            cam = {
-                "name": self.name_input.text(),
-                "resolution_x": int(self.res_x_input.text()),
-                "resolution_y": int(self.res_y_input.text()),
-                "pixel_size_um": float(self.pixel_input.text()),
-                "shutter": self.shutter_input.text(),
-                "notes": self.notes_input.text()
-            }
-        except ValueError:
-            QMessageBox.warning(self, "Error", "Vérifie les valeurs numériques")
-            return
-
-        try:
-            with open(CAMERA_FILE, "r") as f:
-                data = json.load(f)
-        except FileNotFoundError:
-            data = {"cameras": []}
-
-        data["cameras"].append(cam)
-        with open(CAMERA_FILE, "w") as f:
-            json.dump(data, f, indent=4)
-
-        QMessageBox.information(self, "Success", f"Caméra '{cam['name']}' ajoutée !")
-        self.accept()
-        QTimer.singleShot(500, self.parent().reset)
-
-class AddLensDialog(QDialog):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setWindowTitle("Add Lens")
-        self.layout = QFormLayout()
-        self.setLayout(self.layout)
-
-        self.name_input = QLineEdit()
-        self.focal_input = QLineEdit()
-        self.mount_input = QLineEdit()
-        self.max_image_circle_input = QLineEdit()
-        self.aperture_input = QLineEdit()
-      
 
 
-        self.layout.addRow("Name:", self.name_input)
-        self.layout.addRow("Focal length:", self.focal_input)
-        self.layout.addRow("mount:", self.mount_input)
-        self.layout.addRow("Maximum image circle:", self.max_image_circle_input)
-        self.layout.addRow("Aperture:", self.aperture_input)
- 
-
-        self.ok_button = QPushButton("OK")
-        self.ok_button.clicked.connect(self.add_lens)
-        self.layout.addRow(self.ok_button)
-
-    def add_lens(self):
-        try:
-            lens = {
-                "name": self.name_input.text(),
-                "focal_length": float(self.focal_input.text()),
-                "mount": self.mount_input.text(),
-                "max_image_cirle": float(self.max_image_circle_input.text()),
-                "aperture": self.aperture_input.text()
-
-            }
-        except ValueError:
-            QMessageBox.warning(self, "Error", "Vérifie les valeurs numériques")
-            return
-
-        try:
-            with open(OBJECTIVE_FILE, "r") as f:
-                data = json.load(f)
-        except FileNotFoundError:
-            data = {"objectives": []}
-
-        data["objectives"].append(lens)
-        with open(OBJECTIVE_FILE, "w") as f:
-            json.dump(data, f, indent=4)
-
-        QMessageBox.information(self, "Success", f"Objectif '{lens['name']}' ajoutée !")
-        self.accept()
 
 
 
@@ -371,13 +271,13 @@ class MainWindow(QMainWindow):
 
 
     def open_add_camera_dialog(self):
-        dialog = AddCameraDialog(self)
+        dialog = AddCameraDialog(camera_file=CAMERA_FILE, parent=self)
         if dialog.exec():
             self.db.load_cameras()
-            self.reset()
+            
     
     def open_add_lens_dialog(self):
-        dialog = AddLensDialog(self)
+        dialog = AddLensDialog(lens_file=OBJECTIVE_FILE, parent=self)
         if dialog.exec():
             self.load_material
 

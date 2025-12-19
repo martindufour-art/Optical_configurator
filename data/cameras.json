@@ -39,6 +39,14 @@
             "pixel_size_um": 3.45,
             "shutter": "global",
             "notes": "M"
+        },
+        {
+            "name": "5",
+            "resolution_x": 5,
+            "resolution_y": 5,
+            "pixel_size_um": 5.0,
+            "shutter": "5",
+            "notes": "5"
         }
     ]
 }
